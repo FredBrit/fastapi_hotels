@@ -1,5 +1,5 @@
 from sqlalchemy import select, insert
-from repos.base import BaseRepository
+from src.repos.base import BaseRepository
 from src.models.hotels import HotelsORM
 from src.schemas.hotels import Hotel
 

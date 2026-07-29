@@ -6,7 +6,7 @@ from src.database import engine
 
 from src.models.hotels import HotelsORM
 
-from repos.hotels import HotelsRepository
+from src.repos.hotels import HotelsRepository
 
 from sqlalchemy import insert, select
 

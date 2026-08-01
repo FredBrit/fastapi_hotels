@@ -25,7 +25,7 @@ def upgrade() -> None:
         "rooms",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("hotel_id", sa.Integer(), nullable=False),
-        sa.Column("titile", sa.String(), nullable=False),
+        sa.Column("title", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("price", sa.Integer(), nullable=False),
         sa.Column("quantity", sa.Integer(), nullable=False),

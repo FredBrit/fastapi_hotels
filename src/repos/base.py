@@ -12,11 +12,16 @@ class BaseRepository:
         self.session = session
 
 
-    async def get_all(self, *args, **kwargs):
+    async def get_filtered(self, **filters):
 
-        query = select(self.model)
+        conditions = [getattr(self.model, key) == value for key, value in filters.items()]
+
+        query = select(self.model).where(*conditions)
         result = await self.session.execute(query)
-        return [self.schema.model_validate(model, from_attributes=True) for model in result.scalars().all()]
+        return [self.schema.model_validate(model) for model in result.scalars().all()]
+
+    async def get_all(self, *args, **kwargs):
+        return await self.get_filtered()
    
     async def get_one_or_none(self, **filters):
 

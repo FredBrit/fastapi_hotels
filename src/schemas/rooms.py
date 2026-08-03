@@ -7,6 +7,8 @@ class RoomAddRequest(BaseModel):
     price: int
     quantity: int
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class RoomAdd(BaseModel):
     hotel_id: int
@@ -14,7 +16,8 @@ class RoomAdd(BaseModel):
     description: str | None = None
     price: int
     quantity: int
-
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class Room(RoomAdd):
     id: int
@@ -28,10 +31,14 @@ class RoomPatchRequest(BaseModel):
     price: int | None = None
     quantity: int | None = None
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class RoomPatch(BaseModel):
     hotel_id: int | None = None
     title: str | None = None
     description: str | None = None
     price: int | None = None
-    quantity: int | None = None    
+    quantity: int | None = None
+
+    model_config = ConfigDict(from_attributes=True)    

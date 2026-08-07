@@ -12,9 +12,10 @@ class BaseRepository:
         self.session = session
 
 
-    async def get_filtered(self, **filters):
+    async def get_filtered(self, *expressions, **filters):
 
         conditions = [getattr(self.model, key) == value for key, value in filters.items()]
+        conditions.extend(expressions)
 
         query = select(self.model).where(*conditions)
         result = await self.session.execute(query)

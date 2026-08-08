@@ -41,28 +41,7 @@ async def create_room(hotel_id: int, db: DBDep, room_data: RoomAddRequest = Body
 async def edit_room(hotel_id: int, room_id: int, room_data: RoomAddRequest, db: DBDep):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.edit(_room_data, id=room_id)
-
-    result = await db.session.execute(
-        select(RoomsFacilitiesORM.facility_id)
-        .where(RoomsFacilitiesORM.room_id == room_id)
-    )
-
-    # Текущие Facilities в базе
-    current_facility_ids = set(result.scalars().all())
-
-    # Facilities, которые пришли от клиента
-    requested_facility_ids = set(room_data.facilities_ids)
-
-    # Facilities для удаления (Непересечение множеств)
-    facilities_ids_to_delete = current_facility_ids - requested_facility_ids
-
-    rooms_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in requested_facility_ids]
-
-    if facilities_ids_to_delete:
-        await db.rooms_facilities.delete(RoomsFacilitiesORM.room_id == room_id, RoomsFacilitiesORM.facility_id.in_(facilities_ids_to_delete))
-        await db.rooms_facilities.add_bulk(rooms_facilities_data)
-
-
+    await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=room_data.facilities_ids)
     await db.commit()
     return {"status": "OK"}
 
@@ -74,8 +53,13 @@ async def partially_edit_room(
         room_data: RoomPatchRequest,
         db: DBDep
 ):
-    _room_data = RoomPatch(hotel_id=hotel_id, **room_data.model_dump(exclude_unset=True))
+    _room_data_dict = room_data.model_dump(exclude_unset=True)
+    _room_data = RoomPatch(hotel_id=hotel_id, **_room_data_dict)
     await db.rooms.edit(_room_data, exclude_unset=True, id=room_id, hotel_id=hotel_id)
+
+    if "facilities_ids" in _room_data_dict:
+        await db.rooms_facilities.set_room_facilities(room_id, facilities_ids=_room_data_dict["facilities_ids"])
+        
     await db.commit()
     return {"status": "OK"}
 

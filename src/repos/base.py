@@ -46,6 +46,10 @@ class BaseRepository:
         model = result.scalars().one()
         return self.schema.model_validate(model, from_attributes=True) 
 
+    async def add_bulk(self, data: list[BaseModel]):
+        add_data_stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(add_data_stmt)    
+
 
     async def edit(self, data: BaseModel, exclude_unset: bool = False, **filters) -> None:
 
@@ -64,8 +68,9 @@ class BaseRepository:
                 
 
 
-    async def delete(self, **filters) -> None:
+    async def delete(self, *expressions, **filters) -> None:
         conditions = [getattr(self.model, key) == value for key, value in filters.items()]
+        conditions.extend(expressions)
 
         stmt = (
             delete(self.model)
@@ -75,4 +80,4 @@ class BaseRepository:
 
         result = await self.session.execute(stmt)
 
-        return result.scalars().one()
+        

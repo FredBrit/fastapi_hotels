@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Body, Query
 from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatchRequest, RoomPatch
+from src.schemas.facilities import RoomFacilityAdd
+from src.models.facilities import RoomsFacilitiesORM
 from src.api.dependencies import DBDep
+from sqlalchemy import select
 from datetime import date
+
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
 
@@ -24,6 +28,10 @@ async def get_room(hotel_id: int, room_id: int, db: DBDep):
 async def create_room(hotel_id: int, db: DBDep, room_data: RoomAddRequest = Body()):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
     room = await db.rooms.add(_room_data)
+
+    rooms_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in room_data.facilities_ids]
+    await db.rooms_facilities.add_bulk(rooms_facilities_data)
+
     await db.commit()
 
     return {"status": "OK", "data": room}
@@ -32,7 +40,29 @@ async def create_room(hotel_id: int, db: DBDep, room_data: RoomAddRequest = Body
 @router.put("/{hotel_id}/rooms/{room_id}")
 async def edit_room(hotel_id: int, room_id: int, room_data: RoomAddRequest, db: DBDep):
     _room_data = RoomAdd(hotel_id=hotel_id, **room_data.model_dump())
-    await db.rooms.edit(_room_data, id=room_id)
+    room = await db.rooms.edit(_room_data, id=room_id)
+
+    result = await db.session.execute(
+        select(RoomsFacilitiesORM.facility_id)
+        .where(RoomsFacilitiesORM.room_id == room_id)
+    )
+
+    # Текущие Facilities в базе
+    current_facility_ids = set(result.scalars().all())
+
+    # Facilities, которые пришли от клиента
+    requested_facility_ids = set(room_data.facilities_ids)
+
+    # Facilities для удаления (Непересечение множеств)
+    facilities_ids_to_delete = current_facility_ids - requested_facility_ids
+
+    rooms_facilities_data = [RoomFacilityAdd(room_id=room.id, facility_id=f_id) for f_id in requested_facility_ids]
+
+    if facilities_ids_to_delete:
+        await db.rooms_facilities.delete(RoomsFacilitiesORM.room_id == room_id, RoomsFacilitiesORM.facility_id.in_(facilities_ids_to_delete))
+        await db.rooms_facilities.add_bulk(rooms_facilities_data)
+
+
     await db.commit()
     return {"status": "OK"}
 

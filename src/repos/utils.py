@@ -35,6 +35,7 @@ def rooms_ids_for_booking(date_from, date_to, hotel_id: int | None = None):
         rooms_left_table = (
             select(
                 RoomsORM.id.label("room_id"),
+                RoomsORM.hotel_id,
                 (RoomsORM.quantity - func.coalesce(rooms_count.c.rooms_booked, 0)).label("rooms_left"),
             )
             .select_from(RoomsORM)

@@ -6,6 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
+    MODE: Literal['TEST', 'LOCAL', 'DEV', 'PROD'] = PROD
 
     DB_NAME: str
     DB_HOST: str

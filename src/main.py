@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
@@ -11,6 +13,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
+from src.api.dependencies import get_db
 from src.init import redis_manager
 from src.api.auth import router as router_auth
 from src.api.hotels import router as router_hotels
@@ -19,8 +22,18 @@ from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
 from src.api.images import router as router_images
 
+async def today_date():
+    print(f'Сегодняшняя дата:{datetime.date.today()}')
+
+
+async def every_day_task():
+    while True:
+        await today_date()
+        await asyncio.sleep(5)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    asyncio.create_task(every_day_task())
     await redis_manager.connect()
     FastAPICache.init(RedisBackend(redis_manager.redis), prefix="fastapi-cache")
     yield

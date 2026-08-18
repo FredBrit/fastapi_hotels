@@ -1,12 +1,13 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Literal
 
 # определяем абсолютный путь до корня проекта
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    MODE: Literal['TEST', 'LOCAL', 'DEV', 'PROD'] = PROD
+    MODE: Literal['TEST', 'LOCAL', 'DEV', 'PROD']
 
     DB_NAME: str
     DB_HOST: str

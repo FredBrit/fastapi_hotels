@@ -1,4 +1,5 @@
 from src.services.auth import AuthService
+from src.utils.db_manager import DBManager
 
 
 def test_encode_and_decode_access_token():

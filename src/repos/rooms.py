@@ -28,18 +28,16 @@ class RoomsRepository(BaseRepository):
         return [RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
 
 
-    async def get_one_or_none(self, id, hotel_id):
+    # async def get_one_with_rels(self, **filters):
 
-        query = (
-            select(self.model)
-            .options(selectinload(self.model.facilities))
-            .where(RoomsORM.hotel_id == hotel_id, RoomsORM.id == id)
-        )
+    #     conditions = [getattr(self.model, key) == value for key, value in filters.items()]
 
-        result = await self.session.execute(query)
-        model = result.scalar_one_or_none()
-
-        if model is None:
-            return None
-
-        return RoomDataWithRelsMapper.map_to_domain_entity(model)
+    #     query = (
+    #         select(self.model).options(selectinload(self.model.facilities)).where(*conditions)
+    #     )
+    #     result = await self.session.execute(query)
+    #     try:
+    #         result.scalars().one_or_none()
+    #     except NoResultFound:
+    #         raise RoomNotFoundException
+    #     return RoomDataWithRelsMapper.map_to_domain_entity(model)

@@ -1,6 +1,9 @@
 import pytest
 import json
 from httpx import AsyncClient, ASGITransport
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 from src.main import app
 from src.api.dependencies import get_db
@@ -8,9 +11,11 @@ from src.config import settings
 from src.database import Base, engine_null_pool
 from src.models import *
 from src.schemas.hotels import HotelAdd
+from src.schemas.users import UserRequestAdd, UserAdd
 from src.schemas.rooms import RoomAdd
 from src.utils.db_manager import DBManager
 from src.database import async_session_maker_null_pool
+from src.services.auth import AuthService
 
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
@@ -72,3 +77,18 @@ async def register_user(ac, setup_database):
             "password": "1234"
         }
     )
+
+
+@pytest.fixture(scope='session')
+async def authenticated_ac(ac, register_user):
+    print('Фикстура проверяющая токен и отдающая AsyncClient')
+    response = await ac.post(
+        '/auth/login',
+        json={
+            "email": "kot@pes.com",
+            "password": "1234"
+        }               
+    )
+
+    assert ac.cookies['access_token']
+    yield ac

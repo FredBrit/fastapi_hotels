@@ -27,8 +27,11 @@ async def register_user(data: UserRequestAdd, db: DBDep):
     hashed_password = AuthService().hash_password(data.password)
     new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
 
-    
-    await db.users.add(new_user_data)
+    try:
+        await db.users.add(new_user_data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+        
     await db.commit()
 
     return {'status': 'OK'}   

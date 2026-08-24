@@ -60,6 +60,7 @@ redis==8.1.0
 rich==15.0.0
 rich-toolkit==0.20.3
 rignore==0.8.0
+ruff==0.16.4
 sentry-sdk==2.66.0
 shellingham==1.5.4
 six==1.17.0

@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+
 import pytest
 import json
 from httpx import AsyncClient, ASGITransport
@@ -9,7 +11,7 @@ from src.main import app
 from src.api.dependencies import get_db
 from src.config import settings
 from src.database import Base, engine_null_pool
-from src.models import *
+from src.models import * # noqa
 from src.schemas.hotels import HotelAdd
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.schemas.rooms import RoomAdd

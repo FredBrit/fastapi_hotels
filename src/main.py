@@ -22,14 +22,16 @@ from src.api.bookings import router as router_bookings
 from src.api.facilities import router as router_facilities
 from src.api.images import router as router_images
 
+
 async def today_date():
-    print(f'Сегодняшняя дата:{datetime.date.today()}')
+    print(f"Сегодняшняя дата:{datetime.date.today()}")
 
 
 async def every_day_task():
     while True:
         await today_date()
         await asyncio.sleep(5)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,7 +41,8 @@ async def lifespan(app: FastAPI):
     yield
     await redis_manager.close()
 
-app=FastAPI(lifespan=lifespan)
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(router_auth)
 app.include_router(router_hotels)
@@ -48,7 +51,6 @@ app.include_router(router_bookings)
 app.include_router(router_facilities)
 app.include_router(router_images)
 
-                            
 
-if __name__=='__main__':
-    uvicorn.run('main:app', port=8000, host="0.0.0.0")    
+if __name__ == "__main__":
+    uvicorn.run("main:app", port=8000, host="0.0.0.0")

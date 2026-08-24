@@ -18,16 +18,18 @@ class RoomAdd(BaseModel):
     description: str | None = None
     price: int
     quantity: int
-    
+
     model_config = ConfigDict(from_attributes=True)
+
 
 class Room(RoomAdd):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class RoomWithRels(Room):
-    facilities: list[Facility]    
+    facilities: list[Facility]
 
 
 class RoomPatchRequest(BaseModel):
@@ -47,4 +49,4 @@ class RoomPatch(BaseModel):
     price: int | None = None
     quantity: int | None = None
 
-    model_config = ConfigDict(from_attributes=True)    
+    model_config = ConfigDict(from_attributes=True)

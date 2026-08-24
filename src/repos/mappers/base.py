@@ -1,4 +1,3 @@
-
 from typing import TypeVar
 
 from pydantic import BaseModel
@@ -7,7 +6,6 @@ from src.database import Base
 
 DBModelType = TypeVar("DBModelType", bound=Base)
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
-
 
 
 class DataMapper:
@@ -20,4 +18,4 @@ class DataMapper:
 
     @classmethod
     def map_to_persistence_entity(cls, data):
-        return cls.db_model(**data.model_dump())    
+        return cls.db_model(**data.model_dump())

@@ -1,18 +1,14 @@
-
 from src.repos.hotels import HotelsRepository
 from src.repos.rooms import RoomsRepository
 from src.repos.users import UsersRepository
 from src.repos.bookings import BookingsRepository
-from src.repos.facilities import FacilitiesRepository,  RoomsFacilitiesRepository    
-
+from src.repos.facilities import FacilitiesRepository, RoomsFacilitiesRepository
 
 
 class DBManager:
-
     def __init__(self, session_factory):
-        
-        self.session_factory = session_factory
 
+        self.session_factory = session_factory
 
     async def __aenter__(self):
 
@@ -27,16 +23,11 @@ class DBManager:
 
         return self
 
-
     async def __aexit__(self, *args):
 
         await self.session.rollback()
         await self.session.close()
 
-
     async def commit(self):
 
-        await self.session.commit()    
-
-
-
+        await self.session.commit()

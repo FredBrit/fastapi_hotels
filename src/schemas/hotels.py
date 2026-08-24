@@ -11,10 +11,11 @@ class HotelAdd(BaseModel):
 class Hotel(HotelAdd):
     id: int
 
-    model_config = ConfigDict(from_attributes=True)    
+    model_config = ConfigDict(from_attributes=True)
+
 
 class HotelPatch(BaseModel):
     title: str | None = Field(None)
     location: str | None = Field(None)
 
-    model_config = ConfigDict(from_attributes=True)   
+    model_config = ConfigDict(from_attributes=True)

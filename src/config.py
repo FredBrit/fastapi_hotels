@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    MODE: Literal['TEST', 'LOCAL', 'DEV', 'PROD']
+    MODE: Literal["TEST", "LOCAL", "DEV", "PROD"]
 
     DB_NAME: str
     DB_HOST: str
@@ -24,8 +24,7 @@ class Settings(BaseSettings):
 
     @property
     def DB_URL(self):
-        return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
-
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     model_config = SettingsConfigDict(
         # pathlib позволяет формировать путь
@@ -38,4 +37,4 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
 
-settings=Settings()    
+settings = Settings()

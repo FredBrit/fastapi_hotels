@@ -47,6 +47,4 @@ def resize_image(self, image_path: str):
         # Сохраняем изображение
         img_resized.save(output_path)
 
-    print(
-        f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}"
-    )
+    print(f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}")

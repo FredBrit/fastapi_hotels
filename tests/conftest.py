@@ -65,9 +65,7 @@ async def setup_database(check_test_mode):
 
 @pytest.fixture(scope="session")
 async def ac() -> AsyncClient:
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
@@ -79,9 +77,7 @@ async def register_user(ac, setup_database):
 @pytest.fixture(scope="session")
 async def authenticated_ac(ac, register_user):
     print("Фикстура проверяющая токен и отдающая AsyncClient")
-    response = await ac.post(
-        "/auth/login", json={"email": "kot@pes.com", "password": "1234"}
-    )
+    response = await ac.post("/auth/login", json={"email": "kot@pes.com", "password": "1234"})
 
     assert ac.cookies["access_token"]
     yield ac

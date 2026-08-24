@@ -17,15 +17,11 @@ async def test_booking_crud(db):
     created_booking = await db.bookings.add(booking_data)
     await db.commit()
 
-    print(
-        f"Запись создана. Её ID: {created_booking.id}, Price: {created_booking.price}"
-    )
+    print(f"Запись создана. Её ID: {created_booking.id}, Price: {created_booking.price}")
 
     updated_booking_data = booking_data.model_copy(update={"price": 200})
 
-    await db.bookings.edit(
-        updated_booking_data, exclude_unset=True, id=created_booking.id
-    )
+    await db.bookings.edit(updated_booking_data, exclude_unset=True, id=created_booking.id)
     await db.commit()
 
     new_booking_record = await db.bookings.get_one_or_none(id=created_booking.id)

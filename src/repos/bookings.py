@@ -1,4 +1,5 @@
 from sqlalchemy import select, insert, update
+from src.exceptions import AllRoomsAreBookedException
 from src.models.bookings import BookingsORM
 from src.models.rooms import RoomsORM
 from src.repos.base import BaseRepository
@@ -19,7 +20,7 @@ class BookingsRepository(BaseRepository):
         print(f"Количество комнат: {available_quantity}")
 
         if not available_quantity or available_quantity == 0:
-            raise ValueError(f"У номера {data.room_id} нет свободных мест")
+            raise AllRoomsAreBookedException
 
         query = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(query)

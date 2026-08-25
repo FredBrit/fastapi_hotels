@@ -1,7 +1,9 @@
 from sqlalchemy import select, insert, update, delete
+from sqlalchemy.exc import NoResultFound
 from src.schemas.hotels import Hotel
 from pydantic import BaseModel
 from src.repos.mappers.base import DataMapper
+from src.exceptions import ObjectNotFoundException
 
 
 class BaseRepository:
@@ -23,16 +25,16 @@ class BaseRepository:
     async def get_all(self, **filters):
         return await self.get_filtered(**filters)
 
-    async def get_one_or_none(self, **filters):
+    async def get_one(self, **filters):
 
         conditions = [getattr(self.model, key) == value for key, value in filters.items()]
 
         query = select(self.model).where(*conditions)
         result = await self.session.execute(query)
-        model = result.scalars().one_or_none()
-
-        if model is None:
-            return None
+        try:
+            model = result.scalar_one()
+        except NoResultFound:
+            raise ObjectNotFoundException        
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):

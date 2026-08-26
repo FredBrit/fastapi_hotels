@@ -3,7 +3,7 @@ from fastapi_cache.decorator import cache
 from src.schemas.hotels import HotelAdd, HotelPatch
 from src.api.dependencies import PaginationDep, DBDep
 from datetime import date
-from src.exceptions import BookingDateException, ObjectNotFoundException
+from src.exceptions import check_date_to_after_date_from, ObjectNotFoundException, HotelNotFoundHTTPException
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -19,10 +19,11 @@ async def get_hotels(
     date_to: date = Query(json_schema_extra={"example": "2026-08-12"}),
 ):
 
+    check_date_to_after_date_from(date_from, date_to)
+
     per_page = pagination.per_page or 5
 
-    try: 
-        await db.hotels.get_filtered_by_time(
+    return await db.hotels.get_filtered_by_time(
         location=location,
         title=title,
         date_from=date_from,
@@ -31,20 +32,15 @@ async def get_hotels(
         offset=per_page * (pagination.page - 1),
     )
 
-    except BookingDateException as e:
-        raise HTTPException(status_code=422, detail=e.detail)
-            
-
 
 
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
     try:
         hotel = await db.hotels.get_one(id=hotel_id)
-    except ObjectNotFoundException as e:
-        # 204 не дает использовать подпись
-        raise HTTPException(status_code=404, detail=e.detail)
-
+    except ObjectNotFoundException:
+        raise HotelNotFoundHTTPException
+    
     return {"status": "OK", "data": hotel}
 
 

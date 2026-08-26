@@ -5,6 +5,7 @@ from src.repos.mappers.mappers import HotelDataMapper
 from src.models.hotels import HotelsORM
 from src.models.rooms import RoomsORM
 from src.schemas.hotels import Hotel
+from src.exceptions import BookingDateException
 
 from datetime import date
 
@@ -22,6 +23,9 @@ class HotelsRepository(BaseRepository):
         limit: int,
         offset: int,
     ):
+
+        if date_from>=date_to:
+            raise BookingDateException
 
         rooms_ids_to_get = rooms_ids_for_booking(date_from=date_from, date_to=date_to)
 

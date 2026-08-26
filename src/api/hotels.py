@@ -1,9 +1,9 @@
-from fastapi import Query, Body, APIRouter
+from fastapi import Query, Body, APIRouter, HTTPException
 from fastapi_cache.decorator import cache
 from src.schemas.hotels import HotelAdd, HotelPatch
 from src.api.dependencies import PaginationDep, DBDep
 from datetime import date
-
+from src.exceptions import BookingDateException, ObjectNotFoundException
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
@@ -21,7 +21,8 @@ async def get_hotels(
 
     per_page = pagination.per_page or 5
 
-    return await db.hotels.get_filtered_by_time(
+    try: 
+        await db.hotels.get_filtered_by_time(
         location=location,
         title=title,
         date_from=date_from,
@@ -30,10 +31,20 @@ async def get_hotels(
         offset=per_page * (pagination.page - 1),
     )
 
+    except BookingDateException as e:
+        raise HTTPException(status_code=422, detail=e.detail)
+            
+
+
 
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
-    hotel = await db.hotels.get_one_or_none(id=hotel_id)
+    try:
+        hotel = await db.hotels.get_one(id=hotel_id)
+    except ObjectNotFoundException as e:
+        # 204 не дает использовать подпись
+        raise HTTPException(status_code=404, detail=e.detail)
+
     return {"status": "OK", "data": hotel}
 
 

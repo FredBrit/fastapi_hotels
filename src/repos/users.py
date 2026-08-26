@@ -4,6 +4,7 @@ from src.repos.base import BaseRepository
 from src.repos.mappers.mappers import UserDataMapper
 from src.models.users import UsersORM
 from src.schemas.users import User, UserWithHashedPassword, UserAdd
+from src.exceptions import UserExistsException
 
 
 class UsersRepository(BaseRepository):
@@ -29,7 +30,7 @@ class UsersRepository(BaseRepository):
         result_check = check_existing_users.scalars().one_or_none()
 
         if result_check:
-            raise ValueError("Такой пользователь уже существует!")
+            raise UserExistsException
 
         query = insert(self.model).values(**data.model_dump()).returning(self.model)
 

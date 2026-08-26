@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body, Query, HTTPException
 from src.schemas.rooms import RoomAdd, RoomAddRequest, RoomPatchRequest, RoomPatch
 from src.schemas.facilities import RoomFacilityAdd
 from src.models.facilities import RoomsFacilitiesORM
 from src.api.dependencies import DBDep
 from sqlalchemy import select
 from datetime import date
+from src.exceptions import ObjectNotFoundException
 
 
 router = APIRouter(prefix="/hotels", tags=["Номера"])
@@ -24,8 +25,12 @@ async def get_rooms(
 
 @router.get("/{hotel_id}/rooms/{room_id}")
 async def get_room(hotel_id: int, room_id: int, db: DBDep):
-    return await db.rooms.get_one_or_none(id=room_id, hotel_id=hotel_id)
-
+    try:
+        await db.rooms.get_one(id=room_id, hotel_id=hotel_id)
+    except ObjectNotFoundException as e:
+        # 204 не дает использовать подпись
+        raise HTTPException(status_code=404, detail=e.detail)
+    
 
 @router.post("/{hotel_id}/rooms")
 async def create_room(hotel_id: int, db: DBDep, room_data: RoomAddRequest = Body()):

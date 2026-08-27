@@ -1,4 +1,5 @@
 from time import sleep
+import logging
 
 from PIL import Image
 import os
@@ -21,6 +22,7 @@ def test_task(self):
 
 @celery_instance.task(bind=True, name="tasks.resize_image", max_retires=3)
 def resize_image(self, image_path: str):
+    logging.debug(f"Вызывается функция image_path с {image_path=}")
     sizes = [1000, 500, 200]
     output_folder = "src/static/images"
 
@@ -47,4 +49,4 @@ def resize_image(self, image_path: str):
         # Сохраняем изображение
         img_resized.save(output_path)
 
-    print(f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}")
+    logging.info(f"Изображение сохранено в следующих размерах: {sizes} в папке {output_folder}")

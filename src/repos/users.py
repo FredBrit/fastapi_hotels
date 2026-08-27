@@ -21,21 +21,21 @@ class UsersRepository(BaseRepository):
             return None
         return UserWithHashedPassword.model_validate(model, from_attributes=True)
 
-    async def add(self, data: UserAdd):
+    # async def add(self, data: UserAdd):
 
-        check_existing_users = await self.session.execute(
-            select(self.model).where(self.model.email == data.email)
-        )
+    #     check_existing_users = await self.session.execute(
+    #         select(self.model).where(self.model.email == data.email)
+    #     )
 
-        result_check = check_existing_users.scalars().one_or_none()
+    #     result_check = check_existing_users.scalars().one_or_none()
 
-        if result_check:
-            raise UserExistsException
+    #     if result_check:
+    #         raise UserExistsException
 
-        query = insert(self.model).values(**data.model_dump()).returning(self.model)
+    #     query = insert(self.model).values(**data.model_dump()).returning(self.model)
 
-        result = await self.session.execute(query)
+    #     result = await self.session.execute(query)
 
-        new_user = result.scalars().one()
+    #     new_user = result.scalars().one()
 
-        return self.mapper.map_to_domain_entity(new_user)
+    #     return self.mapper.map_to_domain_entity(new_user)

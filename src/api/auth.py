@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Response, Request, Depends
 from src.api.dependencies import UserIdDep, DBDep
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.services.auth import AuthService
-from src.exceptions import UserExistsException
+from src.exceptions import UserExistsException, ObjectAlreadyExistsException
 
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
@@ -27,7 +27,7 @@ async def register_user(data: UserRequestAdd, db: DBDep):
 
     try:
         await db.users.add(new_user_data)
-    except UserExistsException as e:
+    except ObjectAlreadyExistsException as e:
         raise HTTPException(status_code=409, detail=e.detail)
 
     await db.commit()

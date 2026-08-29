@@ -2,7 +2,14 @@ from fastapi import APIRouter, HTTPException, Response, Request, Depends
 from src.api.dependencies import UserIdDep, DBDep
 from src.schemas.users import UserRequestAdd, UserAdd
 from src.services.auth import AuthService
-from src.exceptions import UserExistsException, ObjectAlreadyExistsException
+from src.exceptions import (
+    IncorrectPasswordHTTPException,
+    IncorrectPasswordException,
+    EmailNotRegisteredHTTPException,
+    EmailNotRegisteredException,
+    UserAlreadyExistsException,
+    UserEmailAlreadyExistsHTTPException,
+)
 
 
 router = APIRouter(prefix="/auth", tags=["Аутентификация и авторизация"])
@@ -10,37 +17,31 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация и авт
 
 @router.post("/login")
 async def login_user(data: UserRequestAdd, response: Response, db: DBDep):
-    user = await db.users.get_user_with_hashed_password(email=data.email)
-    if not user:
-        raise HTTPException(status_code=401, detail="Пользователь с таким email не зарегистрирован")
-    if not AuthService().verify_password(data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Неверный пароль")
-    access_token = AuthService().create_access_token({"user_id": user.id})
+
+    try:
+        access_token = await AuthService(db).login_user(data)
+    except EmailNotRegisteredException:
+        raise EmailNotRegisteredHTTPException
+    except IncorrectPasswordException:
+        raise IncorrectPasswordHTTPException
+
     response.set_cookie("access_token", access_token)
     return {"access_token": access_token}
 
 
 @router.post("/register")
 async def register_user(data: UserRequestAdd, db: DBDep):
-    hashed_password = AuthService().hash_password(data.password)
-    new_user_data = UserAdd(email=data.email, hashed_password=hashed_password)
-
     try:
-        await db.users.add(new_user_data)
-    except ObjectAlreadyExistsException as e:
-        raise HTTPException(status_code=409, detail=e.detail)
-
-    await db.commit()
+        await AuthService(db).register_user(data)
+    except UserAlreadyExistsException:
+        raise UserEmailAlreadyExistsHTTPException
 
     return {"status": "OK"}
-
 
 @router.get("/me")
 async def get_me(user_id: UserIdDep, db: DBDep):
 
-    user = await db.users.get_one_or_none(id=user_id)
-
-    return user
+    return await AuthService(db).get_one_or_none_user(user_id)
 
 
 @router.post("/logout")

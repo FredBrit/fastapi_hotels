@@ -24,13 +24,13 @@ async def test_booking_crud(db):
     await db.bookings.edit(updated_booking_data, exclude_unset=True, id=created_booking.id)
     await db.commit()
 
-    new_booking_record = await db.bookings.get_one_or_none(id=created_booking.id)
+    new_booking_record = await db.bookings.get_one(id=created_booking.id)
     assert new_booking_record.price == 200
     print(f"Новый price: {new_booking_record.price}")
 
     await db.bookings.delete(id=created_booking.id)
     await db.commit()
 
-    deleted_booking_record = await db.bookings.get_one_or_none(id=created_booking.id)
+    deleted_booking_record = await db.bookings.get_one(id=created_booking.id)
     assert deleted_booking_record is None
     print("Запись успешно удалена")

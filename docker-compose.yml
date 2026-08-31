@@ -1,0 +1,76 @@
+
+services:
+
+  # База данных
+  booking_db_service:
+    image: postgres:16
+    container_name: booking_db
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg-booking-data:/var/lib/postgresql/data
+    networks:
+      - myNetwork
+    # Healthcheck нужен, чтобы бэкенд не стартовал, пока БД не готова принимать соединения
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  booking_cache_service:
+    image: redis:7.4
+    container_name: booking_cache
+    ports:
+      - "7379:6379"
+    networks:
+      - myNetwork    
+
+  # FastAPI приложение
+  booking_fastapi_service:
+    container_name: 'booking_fastapi'
+    build:
+      context: .
+    ports:
+      - "7777:8000"
+    networks:
+      - myNetwork
+    env_file:
+      - .env
+    # Ждем, пока БД пройдет healthcheck, а Redis просто запустится
+    depends_on:
+      booking_db_service:
+        condition: service_healthy
+      booking_cache_service:
+        condition: service_started
+    # Вот здесь мы накатываем миграции ПЕРЕД запуском самого приложения
+    command: >
+      sh -c "alembic upgrade head && python src/main.py"
+
+  # Celery-worker
+  booking_celery_worker_service:
+    container_name: booking_celery_worker
+    build:
+      context: .
+    networks:
+      - myNetwork
+    env_file:
+      - .env
+    depends_on:
+      - booking_db_service
+      - booking_cache_service
+    command: "celery --app=src.tasks.celery_app:celery_instance worker -l INFO"
+
+# Объявляем тома для сохранения данных
+volumes:
+  pg-booking-data:
+
+# Docker создаст сеть автоматически при первом запуске
+networks:
+  myNetwork:
+    driver: bridge

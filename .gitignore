@@ -18,3 +18,10 @@ __pycache__/
 # Переменные окружения (никогда не коммитьте пароли!)
 .env
 .env-test
+
+# ssh-ключи
+gitlab_deploy
+gitlab_deploy.pub
+*.pem
+id_*
+!id_*.pub

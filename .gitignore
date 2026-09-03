@@ -20,8 +20,8 @@ __pycache__/
 .env-test
 
 # ssh-ключи
-gitlab_deploy
-gitlab_deploy.pub
+gitlab_deploy*
+gitlab_deploy_*.pub
 *.pem
 id_*
 !id_*.pub

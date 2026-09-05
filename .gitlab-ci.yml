@@ -32,23 +32,23 @@ test:
     - name: postgres:16
       alias: postgres
       variables:
-        POSTGRES_DB: "$DB_NAME"
-        POSTGRES_USER: "$DB_USER"
+        POSTGRES_DB: "test"
+        POSTGRES_USER: "fredbrit"
         POSTGRES_PASSWORD: "$DB_PASS"
     - name: redis:7.4
       alias: redis
   variables:
     # Пробрасываем переменные окружения для твоего Python-приложения
     MODE: "TEST"
-    DB_HOST: "$DB_HOST"
+    DB_HOST: "postgres"
     DB_PORT: 5432
-    DB_NAME: "$DB_NAME"
-    DB_USER: "$DB_USER"
+    DB_NAME: "test"
+    DB_USER: "fredbrit"
     DB_PASS: "$DB_PASS"
-    REDIS_HOST: "$REDIS_HOST"
+    REDIS_HOST: "redis"
     REDIS_PORT: 6379
     JWT_SECRET_KEY: "$TEST_JWT_SECRET"
-    JWT_ALGORITHM: "$JWT_ALGORITHM"
+    JWT_ALGORITHM: "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: 30
   before_script:
     - pip install --upgrade pip

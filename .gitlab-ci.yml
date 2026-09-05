@@ -1,16 +1,26 @@
-# Этапы пайплайны
+# Этапы пайплайна
 stages:
   - test
   - build
   - deploy
 
-# Переменные для всего пайплайна
+# Глобальные переменные (с дефолтными значениями-подстраховкой)
 variables:
   DOCKER_DRIVER: overlay2
-  # Переменные для разворачивания постгреса
-  POSTGRES_DB: test
-  POSTGRES_USER: fredbrit
-  POSTGRES_PASSWORD: D1n4m0_19!
+  
+  # Основные переменные для БД и приложения
+  DB_NAME: test
+  DB_USER: fredbrit
+  DB_PASS: $DB_PASS 
+  
+  DB_HOST: postgres
+  DB_PORT: 5432
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  MODE: TEST
+  JWT_ALGORITHM: HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES: 30
+  TEST_JWT_SECRET: $TEST_JWT_SECRET
 
 # ========================
 # 1. ТЕСТЫ
@@ -21,14 +31,26 @@ test:
   services:
     - name: postgres:16
       alias: postgres
+      variables:
+        POSTGRES_DB: $DB_NAME
+        POSTGRES_USER: $DB_USER
+        POSTGRES_PASSWORD: $DB_PASS
     - name: redis:7.4
       alias: redis
+  variables:
+    # Пробрасываем переменные окружения для твоего Python-приложения
+    MODE: $MODE
+    DB_HOST: $DB_HOST
+    DB_PORT: $DB_PORT
+    DB_NAME: $DB_NAME
+    DB_USER: $DB_USER
+    DB_PASS: $DB_PASS
+    REDIS_HOST: $REDIS_HOST
+    REDIS_PORT: $REDIS_PORT
+    JWT_SECRET_KEY: $TEST_JWT_SECRET
+    JWT_ALGORITHM: $JWT_ALGORITHM
+    ACCESS_TOKEN_EXPIRE_MINUTES: $ACCESS_TOKEN_EXPIRE_MINUTES
   before_script:
-    # Копируем .env-test как .env (чтобы приложение его нашло)
-    - cp .env-test .env
-    # Заменяем хосты на алиасы CI/CD
-    - sed -i 's/DB_HOST=localhost/DB_HOST=postgres/g' .env
-    - sed -i 's/REDIS_HOST=localhost/REDIS_HOST=redis/g' .env
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - pip install pytest pytest-cov

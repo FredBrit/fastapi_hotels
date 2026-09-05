@@ -8,9 +8,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
 
-    # Запрещаем читать любые .env файлы, для избежания конфликтов с гитлаб
-    model_config = SettingsConfigDict(env_file=None)
-
     MODE: Literal["TEST", "LOCAL", "DEV", "PROD"]
 
     DB_NAME: str

@@ -1,5 +1,7 @@
+import pytest
 from datetime import date
 from src.schemas.bookings import BookingAdd
+from src.exceptions import ObjectNotFoundException
 
 
 async def test_booking_crud(db):
@@ -31,6 +33,7 @@ async def test_booking_crud(db):
     await db.bookings.delete(id=created_booking.id)
     await db.commit()
 
-    deleted_booking_record = await db.bookings.get_one(id=created_booking.id)
-    assert deleted_booking_record is None
+    with pytest.raises(ObjectNotFoundException):
+        await db.bookings.get_one(id=created_booking.id)
+
     print("Запись успешно удалена")

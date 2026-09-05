@@ -14,7 +14,7 @@ class BookingService(BaseService):
         _booking_data = BookingAdd(
             user_id=user_id,
             price=room_price,
-            **booking_data.dict(),
+            **booking_data.model_dump(),
         )
         booking = await self.db.bookings.add_booking(_booking_data)
         await self.db.commit()

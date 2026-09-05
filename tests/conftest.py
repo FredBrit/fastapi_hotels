@@ -19,6 +19,7 @@ from src.schemas.rooms import RoomAdd
 from src.utils.db_manager import DBManager
 from src.database import async_session_maker_null_pool
 from src.services.auth import AuthService
+from sqlalchemy import select, update, text
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -29,7 +30,7 @@ def check_test_mode():
 @pytest.fixture(scope="function")
 async def db() -> AsyncGenerator[DBManager, None]:
     async with DBManager(session_factory=async_session_maker_null_pool) as db:
-        yield db
+        yield db    
 
 
 async def get_db_null_pool() -> AsyncGenerator[DBManager, None]:
@@ -62,6 +63,8 @@ async def setup_database(check_test_mode):
             await db_.rooms.add(room)
 
         await db_.commit()
+
+                       
 
 
 @pytest.fixture(scope="session")

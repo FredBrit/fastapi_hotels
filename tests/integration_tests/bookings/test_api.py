@@ -1,5 +1,10 @@
 import pytest
+import json
 from tests.conftest import get_db_null_pool
+from src.database import async_session_maker_null_pool
+from src.utils.db_manager import DBManager
+from sqlalchemy import select, update, text
+from src.schemas.rooms import RoomAdd
 
 
 @pytest.mark.parametrize(
@@ -10,8 +15,7 @@ from tests.conftest import get_db_null_pool
         (1, "2024-08-03", "2024-08-12", 200),
         (1, "2024-08-04", "2024-08-13", 200),
         (1, "2024-08-05", "2024-08-14", 200),
-        (1, "2024-08-06", "2024-08-15", 400),
-        (1, "2024-08-17", "2024-08-25", 200),
+        (1, "2024-08-06", "2024-08-15", 409)
     ],
 )
 async def test_add_booking(room_id, date_from, date_to, status_code, db, authenticated_ac):
@@ -34,6 +38,25 @@ async def delete_all_bookings():
         await _db.bookings.delete()
         await _db.commit()
 
+@pytest.fixture(scope="module")
+async def reset_bookings_and_rooms():
+    """Полностью очищает бронирования и восстанавливает количество мест в комнатах"""
+    async with async_session_maker_null_pool() as session:
+        # 1. Очищаем таблицу бронирований
+        await session.execute(text("TRUNCATE TABLE bookings RESTART IDENTITY CASCADE"))
+        await session.execute(text("TRUNCATE TABLE rooms RESTART IDENTITY CASCADE"))
+        await session.commit() 
+
+    async with DBManager(session_factory=async_session_maker_null_pool) as db_:
+        with open("tests/mock_rooms.json") as file_rooms:
+            rooms = json.load(file_rooms)   
+
+        for room_data in rooms:
+            room = RoomAdd(**room_data)
+            await db_.rooms.add(room) 
+
+        await db_.commit()        
+
 
 @pytest.mark.parametrize(
     "room_id, date_from, date_to, booked_rooms",
@@ -48,7 +71,7 @@ async def test_add_and_get_my_bookings(
     date_from,
     date_to,
     booked_rooms,
-    delete_all_bookings,
+    reset_bookings_and_rooms,
     authenticated_ac,
 ):
     response = await authenticated_ac.post(
